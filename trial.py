@@ -12,11 +12,10 @@ u = 0.1
 v = 0.04
 w = 0.0625
 
-# Function definitions (same as in your original code)
+# Function definitions
 def s(u, k, q, b, v, w, m, p, S, Sq, E, Eq, Iq, Iu, Id, D, R, N):
     return u * Sq - k * q * (1 - b) * Iu * S / N - k * q * Iu * S / N - k * (1 - q) * b * Iu * S / N
-
-# Define other functions (sq, e, eq, iu, iq, ids, d, r) here as in your original code
+    
 def s(u,k,q,b,v,w,m,p,S,Sq,E,Eq,Iq,Iu,Id,D,R,N):
   return u*Sq - k*q*(1-b)*Iu*S/N - k*q*Iu*S/N - k*(1-q)*b*Iu*S/N
 
@@ -104,7 +103,6 @@ for i in range(1, len(S)):
     data['D'].append(D[i] / N)
     data['R'].append(R[i] / N)
 
-# Create a DataFrame
 df = pd.DataFrame(data)
 
 # Plotting using Streamlit with DataFrame
