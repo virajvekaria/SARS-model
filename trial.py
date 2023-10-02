@@ -48,7 +48,7 @@ def r(u,k,q,b,v,w,m,p,S,Sq,E,Eq,Iq,Iu,Id,D,R,N):
 st.title("SARS Model")
 
 # Input sliders for parameters
-q = st.slider("q Value", 0.0, 1, 0.01)
+q = st.slider("q Value", 0.0, 1.0, 0.01)
 
 start_time = 0
 end_time = 150
