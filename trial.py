@@ -44,7 +44,7 @@ def r(u,k,q,b,v,w,m,p,S,Sq,E,Eq,Iq,Iu,Id,D,R,N):
 # Streamlit app
 st.title("SARS Model")
 
-# Input sliders for parameters
+# Create a sidebar for the q slider
 q = st.slider("q Value", 0.0, 1.0, 0.01)
 
 start_time = 0
@@ -68,15 +68,15 @@ Iu[0] = 1e4
 
 data = {
     'Time (days)': [],
-    'Susceptible': [],
-    'Susceptible in quarantine': [],
-    'Exposed': [],
-    'Exposed in quarantine': [],
-    'Infected unquarantined': [],
-    'Infected in quarantine': [],
-    'Infected and deceased': [],
-    'Deceased': [],
-    'Recovered': []
+    'Susceptible(S)\n': [],
+    'Susceptible in quarantine(Sq)\n': [],
+    'Exposed(E)': [],
+    'Exposed in\nquarantine\n(Eq)': [],
+    'Infected\nunquarantined\n(Iu)': [],
+    'Infected in\nquarantine\n(Iq)': [],
+    'Infected and\ndeceased\n(Id)': [],
+    'Deceased\n(D)': [],
+    'Recovered\n(R)': []
 }
 
 for i in range(1, len(S)):
@@ -91,18 +91,40 @@ for i in range(1, len(S)):
     R[i] = R[i - 1] + r(u, k, q, b, v, w, m, p, S[i - 1], Sq[i - 1], E[i - 1], Eq[i - 1], Iq[i - 1], Iu[i - 1], Id[i - 1], D[i - 1], R[i - 1], N) * dt
 
     data['Time (days)'].append(i * dt)
-    data['Susceptible'].append(S[i] / N)
-    data['Susceptible in quarantine'].append(Sq[i] / N)
-    data['Exposed'].append(E[i] / N)
-    data['Exposed in quarantine'].append(Eq[i] / N)
-    data['Infected unquarantined'].append(Iu[i] / N)
-    data['Infected in quarantine'].append(Iq[i] / N)
-    data['Infected and deceased'].append(Id[i] / N)
-    data['Deceased'].append(D[i] / N)
-    data['Recovered'].append(R[i] / N)
+    data['Susceptible(S)\n'].append(S[i] / N)
+    data['Susceptible in quarantine(Sq)\n'].append(Sq[i] / N)
+    data['Exposed(E)'].append(E[i] / N)
+    data['Exposed in\nquarantine\n(Eq)'].append(Eq[i] / N)
+    data['Infected\nunquarantined\n(Iu)'].append(Iu[i] / N)
+    data['Infected in\nquarantine\n(Iq)'].append(Iq[i] / N)
+    data['Infected and\ndeceased\n(Id)'].append(Id[i] / N)
+    data['Deceased\n(D)'].append(D[i] / N)
+    data['Recovered\n(R)'].append(R[i] / N)
 
 # Create a DataFrame
 df = pd.DataFrame(data)
 
-# Plotting using Streamlit with DataFrame
-st.line_chart(df.set_index('Time (days)'), use_container_width=True)
+# Create a figure and axis for Matplotlib
+fig, ax = plt.subplots()
+
+# Plotting the data using Matplotlib
+ax.plot(df['Time (days)'], df['Susceptible(S)\n'], label='Susceptible(S)')
+ax.plot(df['Time (days)'], df['Susceptible in quarantine(Sq)\n'], label='Susceptible in quarantine(Sq)')
+ax.plot(df['Time (days)'], df['Exposed(E)'], label='Exposed(E)')
+ax.plot(df['Time (days)'], df['Exposed in\nquarantine\n(Eq)'], label='Exposed in quarantine(Eq)')
+ax.plot(df['Time (days)'], df['Infected\nunquarantined\n(Iu)'], label='Infected unquarantined(Iu)')
+ax.plot(df['Time (days)'], df['Infected in\nquarantine\n(Iq)'], label='Infected in quarantine(Iq)')
+ax.plot(df['Time (days)'], df['Infected and\ndeceased\n(Id)'], label='Infected and deceased(Id)')
+ax.plot(df['Time (days)'], df['Deceased\n(D)'], label='Deceased(D)')
+ax.plot(df['Time (days)'], df['Recovered\n(R)'], label='Recovered(R)')
+
+# Add labels and title
+ax.set_xlabel('Time (days)')
+ax.set_ylabel('Normalized Population')
+ax.set_title('SARS Model')
+
+# Display the legend below the graph
+plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=1)
+
+# Show the Matplotlib plot in Streamlit using st.pyplot
+st.pyplot(fig)
