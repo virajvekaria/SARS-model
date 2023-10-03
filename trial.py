@@ -4,106 +4,82 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 
-b = 0.06 
-k = 10 
-m = 0.0975
-N = 1e7
-p = 0.2
-u = 0.1
-v = 0.04
-w = 0.0625
+# Parameters for the disease model
+transmission_rate = 0.06  # Rate of disease transmission
+contact_rate = 10  # Contact rate between individuals
+recovery_rate = 0.0975  # Rate of recovery
+total_population = 1e7  # Total population size
+infection_probability = 0.2  # Probability of infection on contact
+exposed_rate = 0.1  # Rate of progression from exposed to infected
+quarantine_rate = 0.04  # Rate of quarantine
+death_rate = 0.0625  # Rate of death due to the disease
 
-# Function definitions (same as in your original code)
-def s(u, k, q, b, v, w, m, p, S, Sq, E, Eq, Iq, Iu, Id, D, R, N):
-    return u * Sq - k * q * (1 - b) * Iu * S / N - k * q * Iu * S / N - k * (1 - q) * b * Iu * S / N
+# Function definitions for disease model
+def susceptible_change(transmission_rate, contact_rate, infection_probability, susceptible, exposed, infected_quarantined, infected_unquarantined, deceased, recovered, total_population):
+    return transmission_rate * exposed - contact_rate * infection_probability * (1 - susceptible / total_population) * infected_unquarantined * susceptible / total_population - contact_rate * infection_probability * infected_unquarantined * susceptible / total_population - contact_rate * (1 - infection_probability) * (1 - susceptible / total_population) * infected_unquarantined * susceptible / total_population
 
-# Define other functions (sq, e, eq, iu, iq, ids, d, r) here as in your original code
-def s(u,k,q,b,v,w,m,p,S,Sq,E,Eq,Iq,Iu,Id,D,R,N):
-  return u*Sq - k*q*(1-b)*Iu*S/N - k*q*Iu*S/N - k*(1-q)*b*Iu*S/N
+def exposed_change(transmission_rate, contact_rate, infection_probability, susceptible, exposed, infected_quarantined, infected_unquarantined, deceased, recovered, total_population):
+    return contact_rate * infection_probability * (1 - susceptible / total_population) * infected_unquarantined * susceptible / total_population - exposed_rate * exposed
 
-def sq(u,k,q,b,v,w,m,p,S,Sq,E,Eq,Iq,Iu,Id,D,R,N):
-  return k*q*(1-b)*Iu*S/N - u*Sq
+def infected_quarantined_change(transmission_rate, contact_rate, infection_probability, susceptible, exposed, infected_quarantined, infected_unquarantined, deceased, recovered, total_population):
+    return contact_rate * infection_probability * infected_unquarantined * susceptible / total_population - quarantine_rate * infected_quarantined - exposed_rate * infected_quarantined - death_rate * infected_quarantined
 
-def e(u,k,q,b,v,w,m,p,S,Sq,E,Eq,Iq,Iu,Id,D,R,N):
-  return k*(1-q)*b*Iu*S/N - p*E
+def infected_unquarantined_change(transmission_rate, contact_rate, infection_probability, susceptible, exposed, infected_quarantined, infected_unquarantined, deceased, recovered, total_population):
+    return exposed_rate * exposed - recovery_rate * infected_unquarantined - quarantine_rate * infected_unquarantined - death_rate * infected_unquarantined
 
-def eq(u,k,q,b,v,w,m,p,S,Sq,E,Eq,Iq,Iu,Id,D,R,N):
-  return k*q*b*Iu*S/N - p*Eq
+def deceased_change(transmission_rate, contact_rate, infection_probability, susceptible, exposed, infected_quarantined, infected_unquarantined, deceased, recovered, total_population):
+    return death_rate * (infected_quarantined + infected_unquarantined)
 
-def iu(u,k,q,b,v,w,m,p,S,Sq,E,Eq,Iq,Iu,Id,D,R,N):
-  return p*E - m*Iu - v*Iu - w*Iu
-
-def iq(u,k,q,b,v,w,m,p,S,Sq,E,Eq,Iq,Iu,Id,D,R,N):
-  return p*Eq - m*Iq - v*Iq - w*Iq
-
-def ids(u,k,q,b,v,w,m,p,S,Sq,E,Eq,Iq,Iu,Id,D,R,N):
-  return w*Iu + w*Iq - v*Id - m*Id
-
-def d(u,k,q,b,v,w,m,p,S,Sq,E,Eq,Iq,Iu,Id,D,R,N):
-  return m*(Iu + Iq + Id)
-
-def r(u,k,q,b,v,w,m,p,S,Sq,E,Eq,Iq,Iu,Id,D,R,N):
-  return v*(Iu + Iq + Id)
+def recovered_change(transmission_rate, contact_rate, infection_probability, susceptible, exposed, infected_quarantined, infected_unquarantined, deceased, recovered, total_population):
+    return recovery_rate * (infected_quarantined + infected_unquarantined)
 
 # Streamlit app
 st.title("SARS Model")
 
 # Input sliders for parameters
-q = st.slider("q Value", 0.0, 0.2, 0.05)
+infection_probability = st.slider("Infection Probability", 0.0, 0.2, 0.05)
 
 start_time = 0
 end_time = 150
-dt = 2
+time_step = 2
 
-n = int((end_time - start_time) / dt)
+num_steps = int((end_time - start_time) / time_step)
 
-S = np.zeros(n)
-Sq = np.zeros(n)
-E = np.zeros(n)
-Eq = np.zeros(n)
-Iu = np.zeros(n)
-Id = np.zeros(n)
-R = np.zeros(n)
-D = np.zeros(n)
-Iq = np.zeros(n)
+susceptible = np.zeros(num_steps)
+exposed = np.zeros(num_steps)
+infected_quarantined = np.zeros(num_steps)
+infected_unquarantined = np.zeros(num_steps)
+deceased = np.zeros(num_steps)
+recovered = np.zeros(num_steps)
 
-S[0] = 1e7 - 1e4
-Iu[0] = 1e4
+susceptible[0] = total_population - 1e4
+infected_unquarantined[0] = 1e4
 
 data = {
     'Time (days)': [],
-    'S': [],
-    'Sq': [],
-    'E': [],
-    'Eq': [],
-    'Iu': [],
-    'Iq': [],
-    'Id': [],
-    'D': [],
-    'R': []
+    'Susceptible': [],
+    'Exposed': [],
+    'Infected Quarantined': [],
+    'Infected Unquarantined': [],
+    'Deceased': [],
+    'Recovered': []
 }
 
-for i in range(1, len(S)):
-    S[i] = S[i - 1] + s(u, k, q, b, v, w, m, p, S[i - 1], Sq[i - 1], E[i - 1], Eq[i - 1], Iq[i - 1], Iu[i - 1], Id[i - 1], D[i - 1], R[i - 1], N) * dt
-    Sq[i] = Sq[i - 1] + sq(u, k, q, b, v, w, m, p, S[i - 1], Sq[i - 1], E[i - 1], Eq[i - 1], Iq[i - 1], Iu[i - 1], Id[i - 1], D[i - 1], R[i - 1], N) * dt
-    E[i] = E[i - 1] + e(u, k, q, b, v, w, m, p, S[i - 1], Sq[i - 1], E[i - 1], Eq[i - 1], Iq[i - 1], Iu[i - 1], Id[i - 1], D[i - 1], R[i - 1], N) * dt
-    Eq[i] = Eq[i - 1] + eq(u, k, q, b, v, w, m, p, S[i - 1], Sq[i - 1], E[i - 1], Eq[i - 1], Iq[i - 1], Iu[i - 1], Id[i - 1], D[i - 1], R[i - 1], N) * dt
-    Iu[i] = Iu[i - 1] + iu(u, k, q, b, v, w, m, p, S[i - 1], Sq[i - 1], E[i - 1], Eq[i - 1], Iq[i - 1], Iu[i - 1], Id[i - 1], D[i - 1], R[i - 1], N) * dt
-    Id[i] = Id[i - 1] + ids(u, k, q, b, v, w, m, p, S[i - 1], Sq[i - 1], E[i - 1], Eq[i - 1], Iq[i - 1], Iu[i - 1], Id[i - 1], D[i - 1], R[i - 1], N) * dt
-    Iq[i] = Iq[i - 1] + iq(u, k, q, b, v, w, m, p, S[i - 1], Sq[i - 1], E[i - 1], Eq[i - 1], Iq[i - 1], Iu[i - 1], Id[i - 1], D[i - 1], R[i - 1], N) * dt
-    D[i] = D[i - 1] + d(u, k, q, b, v, w, m, p, S[i - 1], Sq[i - 1], E[i - 1], Eq[i - 1], Iq[i - 1], Iu[i - 1], Id[i - 1], D[i - 1], R[i - 1], N) * dt
-    R[i] = R[i - 1] + r(u, k, q, b, v, w, m, p, S[i - 1], Sq[i - 1], E[i - 1], Eq[i - 1], Iq[i - 1], Iu[i - 1], Id[i - 1], D[i - 1], R[i - 1], N) * dt
+for i in range(1, len(susceptible)):
+    susceptible[i] = susceptible[i - 1] + susceptible_change(transmission_rate, contact_rate, infection_probability, susceptible[i - 1], exposed[i - 1], infected_quarantined[i - 1], infected_unquarantined[i - 1], deceased[i - 1], recovered[i - 1], total_population) * time_step
+    exposed[i] = exposed[i - 1] + exposed_change(transmission_rate, contact_rate, infection_probability, susceptible[i - 1], exposed[i - 1], infected_quarantined[i - 1], infected_unquarantined[i - 1], deceased[i - 1], recovered[i - 1], total_population) * time_step
+    infected_quarantined[i] = infected_quarantined[i - 1] + infected_quarantined_change(transmission_rate, contact_rate, infection_probability, susceptible[i - 1], exposed[i - 1], infected_quarantined[i - 1], infected_unquarantined[i - 1], deceased[i - 1], recovered[i - 1], total_population) * time_step
+    infected_unquarantined[i] = infected_unquarantined[i - 1] + infected_unquarantined_change(transmission_rate, contact_rate, infection_probability, susceptible[i - 1], exposed[i - 1], infected_quarantined[i - 1], infected_unquarantined[i - 1], deceased[i - 1], recovered[i - 1], total_population) * time_step
+    deceased[i] = deceased[i - 1] + deceased_change(transmission_rate, contact_rate, infection_probability, susceptible[i - 1], exposed[i - 1], infected_quarantined[i - 1], infected_unquarantined[i - 1], deceased[i - 1], recovered[i - 1], total_population) * time_step
+    recovered[i] = recovered[i - 1] + recovered_change(transmission_rate, contact_rate, infection_probability, susceptible[i - 1], exposed[i - 1], infected_quarantined[i - 1], infected_unquarantined[i - 1], deceased[i - 1], recovered[i - 1], total_population) * time_step
 
-    data['Time (days)'].append(i * dt)
-    data['S'].append(S[i] / N)
-    data['Sq'].append(Sq[i] / N)
-    data['E'].append(E[i] / N)
-    data['Eq'].append(Eq[i] / N)
-    data['Iu'].append(Iu[i] / N)
-    data['Iq'].append(Iq[i] / N)
-    data['Id'].append(Id[i] / N)
-    data['D'].append(D[i] / N)
-    data['R'].append(R[i] / N)
+    data['Time (days)'].append(i * time_step)
+    data['Susceptible'].append(susceptible[i] / total_population)
+    data['Exposed'].append(exposed[i] / total_population)
+    data['Infected Quarantined'].append(infected_quarantined[i] / total_population)
+    data['Infected Unquarantined'].append(infected_unquarantined[i] / total_population)
+    data['Deceased'].append(deceased[i] / total_population)
+    data['Recovered'].append(recovered[i] / total_population)
 
 # Create a DataFrame
 df = pd.DataFrame(data)
