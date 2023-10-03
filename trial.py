@@ -91,15 +91,15 @@ for i in range(1, len(S)):
     R[i] = R[i - 1] + r(u, k, q, b, v, w, m, p, S[i - 1], Sq[i - 1], E[i - 1], Eq[i - 1], Iq[i - 1], Iu[i - 1], Id[i - 1], D[i - 1], R[i - 1], N) * dt
 
     data['Time (days)'].append(i * dt)
-    data['S'].append(S[i] / N)
-    data['Sq'].append(Sq[i] / N)
-    data['E'].append(E[i] / N)
-    data['Eq'].append(Eq[i] / N)
-    data['Iu'].append(Iu[i] / N)
-    data['Iq'].append(Iq[i] / N)
-    data['Id'].append(Id[i] / N)
-    data['D'].append(D[i] / N)
-    data['R'].append(R[i] / N)
+    data['Susceptible'].append(S[i] / N)
+    data['Susceptible in quarantine'].append(Sq[i] / N)
+    data['Exposed'].append(E[i] / N)
+    data['Exposed in quarantine'].append(Eq[i] / N)
+    data['Infected unquarantined'].append(Iu[i] / N)
+    data['Infected in quarantined'].append(Iq[i] / N)
+    data['Infected and deceased'].append(Id[i] / N)
+    data['Deceased'].append(D[i] / N)
+    data['REcovered'].append(R[i] / N)
 
 # Create a DataFrame
 df = pd.DataFrame(data)
