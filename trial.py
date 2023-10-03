@@ -1,4 +1,3 @@
-import math
 import pandas as pd
 import streamlit as st
 import numpy as np
@@ -81,7 +80,6 @@ for i in range(1, len(susceptible)):
     data['Deceased'].append(deceased[i] / total_population)
     data['Recovered'].append(recovered[i] / total_population)
 
-# Create a DataFrame
 df = pd.DataFrame(data)
 
 # Plotting using Streamlit with DataFrame
