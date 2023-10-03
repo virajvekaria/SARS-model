@@ -68,15 +68,15 @@ Iu[0] = 1e4
 
 data = {
     'Time (days)': [],
-    'S': [],
-    'Sq': [],
-    'E': [],
-    'Eq': [],
-    'Iu': [],
-    'Iq': [],
-    'Id': [],
-    'D': [],
-    'R': []
+    'Susceptible': [],
+    'Susceptible in quarantine': [],
+    'Exposed': [],
+    'Exposed in quarantine': [],
+    'Infected unquarantined': [],
+    'Infected in quarantine': [],
+    'Infected and deceased': [],
+    'Deceased': [],
+    'Recovered': []
 }
 
 for i in range(1, len(S)):
@@ -96,10 +96,10 @@ for i in range(1, len(S)):
     data['Exposed'].append(E[i] / N)
     data['Exposed in quarantine'].append(Eq[i] / N)
     data['Infected unquarantined'].append(Iu[i] / N)
-    data['Infected in quarantined'].append(Iq[i] / N)
+    data['Infected in quarantine'].append(Iq[i] / N)
     data['Infected and deceased'].append(Id[i] / N)
     data['Deceased'].append(D[i] / N)
-    data['REcovered'].append(R[i] / N)
+    data['Recovered'].append(R[i] / N)
 
 # Create a DataFrame
 df = pd.DataFrame(data)
