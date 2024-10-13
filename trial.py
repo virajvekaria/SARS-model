@@ -13,7 +13,6 @@ u = 0.1
 v = 0.04
 w = 0.0625
 
-# Define other functions (sq, e, eq, iu, iq, ids, d, r) here as in your original code
 def s(u,k,q,b,v,w,m,p,S,Sq,E,Eq,Iq,Iu,Id,D,R,N):
   return u*Sq - k*q*(1-b)*Iu*S/N - k*q*Iu*S/N - k*(1-q)*b*Iu*S/N
 
